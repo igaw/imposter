@@ -1,0 +1,9 @@
+Simple Python based UI for ConnMan
+
+In order to run Imposter you need following dependencies resolved:
+
+   Python 2.x
+   PyQt 4.x
+
+The icons are shamelessly stolen from carrick-ng project.
+git://git.moblin.org/carrick-ng
