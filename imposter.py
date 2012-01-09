@@ -50,6 +50,10 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 		self.set_button()
 
 	def set_name(self):
+		if "Name" not in self.properties:
+			self.la_Name.setText("")
+			return
+
 		self.la_Name.setText(self.properties["Name"])
 
 	def set_state(self):
