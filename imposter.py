@@ -292,14 +292,14 @@ class MainWidget(QWidget):
 		self.trayIconMenu.addAction(self.quitAction)
 		self.trayIcon = QSystemTrayIcon(self)
 		self.trayIcon.setContextMenu(self.trayIconMenu)
-		self.trayIcon.setIcon(QIcon("icons/network-active.png"))	
+		self.trayIcon.setIcon(QIcon("icons/network-active.png"))
 
 		self.trayIcon.show()
 
 		traySignal = "activated(QSystemTrayIcon::ActivationReason)"
 		QObject.connect(self.trayIcon, SIGNAL(traySignal),
 				self.__icon_activated)
-		
+
 	def closeEvent(self, event):
 		self.hide()
 		self.trayIcon.show()
@@ -312,7 +312,7 @@ class MainWidget(QWidget):
 				self.trayIcon.show()
 			else:
 				self.show()
-    
+
 	def connman_name_owner_changed(self, proxy):
 		try:
 			if proxy:
