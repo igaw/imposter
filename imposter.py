@@ -16,8 +16,9 @@
 import signal
 import sys
 from service_entry_ui import Ui_ServiceEntry
+from agent_ui import Ui_Agent
 
-from PyQt4.QtCore import SIGNAL, SLOT, QObject
+from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer
 from PyQt4.QtGui import *
 
 import traceback
@@ -28,6 +29,75 @@ import dbus.mainloop.qt
 dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+class AgentUi(QDialog):
+	def __init__(self, parent, path, fields):
+		QWidget.__init__(self, parent)
+		self.ui = Ui_Agent()
+		self.ui.setupUi(self)
+
+		if fields.has_key("Passphrase"):
+			self.ui.label1.setText("Passphrase")
+			self.ui.label2.setVisible(False)
+			self.ui.lineEdit2.setVisible(False)
+		else:
+			print "No method to answer the input request"
+
+	def accept(self):
+		self.hide()
+		return True
+
+	def reject(self):
+		self.hide()
+		return True
+
+	def get_response(self):
+		response = {}
+		response["Passphrase"] = str(self.ui.lineEdit1.text())
+
+		print response
+
+		return response
+
+class Agent(dbus.service.Object):
+	def __init__(self, parent):
+		dbus.service.Object.__init__(self)
+		self.parent = parent
+
+	@dbus.service.method("net.connman.Agent",
+				in_signature='', out_signature='')
+	def Release(self):
+		print "Release"
+
+	@dbus.service.method("net.connman.Agent",
+				in_signature='os', out_signature='')
+	def ReportError(self, path, error):
+		print "ReportError"
+		print path, error
+
+	@dbus.service.method("net.connman.Agent",
+				in_signature='os', out_signature='')
+	def RequestBrowser(self, path, url):
+		print "RequestBrowser"
+
+	@dbus.service.method("net.connman.Agent",
+				in_signature='oa{sv}', out_signature='a{sv}',
+				async_callbacks=("return_cb", "raise_cb"))
+	def RequestInput(self, path, fields, return_cb, raise_cb):
+		print "RequestInput"
+
+		def handleRequest():
+			dialog = AgentUi(self.parent, path, fields)
+			dialog.exec_()
+
+			return_cb(dialog.get_response())
+
+		QTimer.singleShot(10, handleRequest)
+
+	@dbus.service.method("net.connman.Agent",
+				in_signature='', out_signature='')
+	def Cancel(self):
+		print "Cancel"
 
 class ServiceEntry(QWidget, Ui_ServiceEntry):
 	def __init__(self, parent, path, properties):
@@ -179,6 +249,7 @@ class MainWidget(QWidget):
 
 		self.bus = dbus.SystemBus()
 		self.manager = None
+		self.agent_path = "/imposter_agent"
 
 		self.setup_ui()
 		self.create_system_tray()
@@ -284,6 +355,10 @@ class MainWidget(QWidget):
 			self.service_pane.remove_service(path, properties)
 
 	def connman_up(self):
+		self.agent = Agent(self)
+		self.agent.add_to_connection(self.bus, self.agent_path)
+		self.manager.RegisterAgent(self.agent_path)
+
 		self.bus.add_signal_receiver(self.property_changed,
 					bus_name="net.connman",
 					signal_name = "PropertyChanged",
@@ -309,6 +384,9 @@ class MainWidget(QWidget):
 		self.services_added(self.manager.GetServices())
 
 	def connman_down(self):
+		self.agent.remove_from_connection(self.bus, self.agent_path)
+		self.agent = None
+
 		self.tech_pane.clear()
 		self.service_pane.clear()
 
