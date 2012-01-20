@@ -231,11 +231,16 @@ class TechnologyPane(QWidget):
 		self.techs = {}
 
 	def add_technology(self, path, properties):
+		if path in self.techs:
+			return
+
+		print "Add Technology ", path
 		entry = TechnologyEntry(self, path, properties)
 		self.layout.addWidget(entry)
 		self.techs[path] = entry
 
 	def remove_technology(self, path):
+		print "Remove Technology ", path
 		self.techs[path].deleteLater()
 		del self.techs[path]
 
