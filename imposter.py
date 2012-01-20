@@ -326,12 +326,8 @@ class MainWidget(QWidget):
 		try:
 			if proxy:
 				print "ConnMan appeared on D-Bus ", str(proxy)
-				self.manager = dbus.Interface(
-					self.bus.get_object("net.connman", "/"),
-					"net.connman.Manager")
 				self.connman_up()
 			else:
-				self.manager = None
 				print "ConnMan disappeared on D-Bus"
 				self.connman_down()
 
@@ -364,6 +360,9 @@ class MainWidget(QWidget):
 			self.service_pane.remove_service(path, properties)
 
 	def connman_up(self):
+		self.manager = dbus.Interface(self.bus.get_object("net.connman", "/"),
+					      "net.connman.Manager")
+
 		self.agent = Agent(self)
 		self.agent.add_to_connection(self.bus, self.agent_path)
 		self.manager.RegisterAgent(self.agent_path)
@@ -396,6 +395,9 @@ class MainWidget(QWidget):
 		if self.agent:
 			self.agent.remove_from_connection(self.bus, self.agent_path)
 			self.agent = None
+
+		if self.manager:
+			self.manager = None
 
 		self.tech_pane.clear()
 		self.service_pane.clear()
