@@ -204,21 +204,24 @@ class TechnologyEntry(QCheckBox):
 
 
 		self.setText(properties["Name"])
-
-		# XXX will go away
-		state = self.properties["State"]
-		if state == "enabled":
-			self.setChecked(True)
+		self.setChecked(self.properties["Powered"])
 
 		self.connect(self, SIGNAL('stateChanged(int)'),
 				self.cb_state_changed)
 
 	def cb_state_changed(self, state):
-		# XXX fix this when we have Powered
-		pass
+		powered = False
+		if state == 2:
+			powered = True
+
+		self.technology.SetProperty("Powered", powered)
+
 
 	def property_changed(self, name, value):
 		print "Technology PropertyChanged: ", name
+
+		if name is "Powered":
+			self.setChecked(value)
 
 class TechnologyPane(QWidget):
 	def __init__(self, parent=None):
