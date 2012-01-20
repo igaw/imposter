@@ -252,6 +252,7 @@ class MainWidget(QWidget):
 
 		self.bus = dbus.SystemBus()
 		self.manager = None
+		self.agent = None
 		self.agent_path = "/imposter_agent"
 
 		self.setup_ui()
@@ -387,8 +388,9 @@ class MainWidget(QWidget):
 		self.services_added(self.manager.GetServices())
 
 	def connman_down(self):
-		self.agent.remove_from_connection(self.bus, self.agent_path)
-		self.agent = None
+		if self.agent:
+			self.agent.remove_from_connection(self.bus, self.agent_path)
+			self.agent = None
 
 		self.tech_pane.clear()
 		self.service_pane.clear()
