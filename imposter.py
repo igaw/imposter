@@ -244,7 +244,7 @@ class TechnologyPane(QWidget):
 
 	def clear(self):
 		for path, properties in self.techs.items():
-			self.remove_technology(path, properties)
+			self.remove_technology(path)
 
 class MainWidget(QWidget):
 	def __init__(self, parent=None):
