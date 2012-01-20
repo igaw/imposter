@@ -235,7 +235,7 @@ class TechnologyPane(QWidget):
 		self.layout.addWidget(entry)
 		self.techs[path] = entry
 
-	def remove_technology(self, path, properties):
+	def remove_technology(self, path):
 		self.techs[path].deleteLater()
 		del self.techs[path]
 
@@ -346,8 +346,8 @@ class MainWidget(QWidget):
 	def technology_added(self, path, properties):
 		self.tech_pane.add_technology(path, properties)
 
-	def technology_removed(self, path, properties):
-		self.tech_pane.remove_technology(path, properties)
+	def technology_removed(self, path):
+		self.tech_pane.remove_technology(path)
 
 	def services_added(self, services):
 		for path, properties in services:
