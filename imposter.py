@@ -17,6 +17,7 @@ import signal
 import sys
 from service_entry_ui import Ui_ServiceEntry
 from agent_ui import Ui_Agent
+from manager_ui  import Ui_Manager
 
 from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer
 from PyQt4.QtGui import *
@@ -251,6 +252,51 @@ class TechnologyPane(QWidget):
 		for path, properties in self.techs.items():
 			self.remove_technology(path)
 
+class ManagerPane(QWidget, Ui_Manager):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setupUi(self)
+
+		self.bus = dbus.SystemBus()
+
+		self.manager = dbus.Interface(
+				self.bus.get_object("net.connman", "/"),
+				"net.connman.Manager")
+
+		self.connect(self.cb_OfflineMode, SIGNAL('stateChanged(int)'),
+				self.cb_offline_mode)
+		self.connect(self.cb_SessionMode, SIGNAL('stateChanged(int)'),
+				self.cb_session_mode)
+
+	def cb_offline_mode(self, state):
+		mode = False
+		if state == 2:
+			mode = True
+
+		self.manager.SetProperty("OfflineMode", mode)
+
+	def cb_session_mode(self, state):
+		mode = False
+		if state == 2:
+			mode = True
+
+		self.manager.SetProperty("SessionMode", mode)
+
+	def property_changed(self, name, value):
+		print "Manager PropertyChanged: ", name
+
+		if name == "State":
+			self.la_State.setText(value)
+		elif name == "OfflineMode":
+			self.cb_OfflineMode.setChecked(value)
+		elif name == "SessionMode":
+			self.cb_SessionMode.setChecked(value)
+
+	def clear(self):
+		self.la_State.setText("n/a")
+		self.cb_OfflineMode.setChecked(0)
+		self.cb_SessionMode.setChecked(0)
+
 class MainWidget(QWidget):
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
@@ -276,14 +322,16 @@ class MainWidget(QWidget):
 		self.setLayout(self.mainLayout)
 
 		self.tech_pane = TechnologyPane()
+		self.manager_pane = ManagerPane()
 		self.service_pane = ServicePane()
 
-		# Add technology pane
+		# Add technology and manager pane
 		layout = QVBoxLayout()
 		layout.addWidget(self.tech_pane)
 		spacer = QSpacerItem(20, 40,
 				QSizePolicy.Minimum, QSizePolicy.Expanding)
 		layout.addItem(spacer)
+		layout.addWidget(self.manager_pane)
 		self.mainLayout.addLayout(layout)
 
 		# Add services pane
@@ -343,7 +391,7 @@ class MainWidget(QWidget):
 			self.tech_pane.property_changed(name, value,
 							path, interface)
 		elif interface == "net.connman.Manager":
-			print "Manager PropertyChanged: ", name
+			self.manager_pane.property_changed(name, value)
 
 	def technology_added(self, path, properties):
 		self.tech_pane.add_technology(path, properties)
@@ -391,6 +439,9 @@ class MainWidget(QWidget):
 
 		self.services_added(self.manager.GetServices())
 
+		for name, value in self.manager.GetProperties().items():
+			self.manager_pane.property_changed(name, value)
+
 	def connman_down(self):
 		if self.agent:
 			self.agent.remove_from_connection(self.bus, self.agent_path)
@@ -400,6 +451,7 @@ class MainWidget(QWidget):
 			self.manager = None
 
 		self.tech_pane.clear()
+		self.manager_pane.clear()
 		self.service_pane.clear()
 
 if __name__ == "__main__":

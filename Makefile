@@ -1,4 +1,4 @@
-widgets = service_entry_ui.py agent_ui.py
+widgets = service_entry_ui.py agent_ui.py manager_ui.py
 
 all: $(widgets)
 
