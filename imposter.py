@@ -173,11 +173,15 @@ class ServicePane(QWidget):
 		self.setLayout(self.hlayout)
 
 	def add_service(self, path, properties):
+		if path in self.services:
+			print "Service already added ", path
+			return
+
 		entry = ServiceEntry(self.contents, path, properties)
 		self.services[path]  = entry
 		self.vlayout.addWidget(self.services[path])
 
-	def remove_service(self, path, properties):
+	def remove_service(self, path):
 		self.services[path].deleteLater()
 		del self.services[path]
 
@@ -404,8 +408,8 @@ class MainWidget(QWidget):
 			self.service_pane.add_service(path, properties)
 
 	def services_removed(self, services):
-		for path, properties in services:
-			self.service_pane.remove_service(path, properties)
+		for path in services:
+			self.service_pane.remove_service(path)
 
 	def connman_up(self):
 		self.manager = dbus.Interface(self.bus.get_object("net.connman", "/"),
