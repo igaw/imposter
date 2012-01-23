@@ -397,6 +397,22 @@ class MainWidget(QWidget):
 		elif interface == "net.connman.Manager":
 			self.manager_pane.property_changed(name, value)
 
+			# XXX remove this when ServiceAdded/ServiceRemoved is added to ConnMan
+			if name == "Services":
+				# remove service which have been gone away
+				for path, srv in self.service_pane.services.items():
+					if path not in value:
+						self.service_pane.remove_service(path)
+
+				# add new services
+				for path in value:
+					if path not in self.service_pane.services:
+						service = dbus.Interface(
+							self.bus.get_object("net.connman", path),
+							"net.connman.Service")
+						properties = service.GetProperties()
+						self.service_pane.add_service(path, properties)
+
 	def technology_added(self, path, properties):
 		self.tech_pane.add_technology(path, properties)
 
