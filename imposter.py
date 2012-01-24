@@ -290,6 +290,8 @@ class TechnologyPane(QWidget):
 		del self.techs[path]
 
 	def property_changed(self, name, value, path, interface):
+		if not path in self.techs:
+			return
 		self.techs[path].property_changed(name, value)
 
 	def clear(self):
