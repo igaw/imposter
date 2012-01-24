@@ -212,9 +212,9 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 				self.pb_powered_clicked)
 		self.connect(self.pb_Tethering, SIGNAL('clicked()'),
 				self.pb_tethering_clicked)
-		self.connect(self.le_TetheringIdentifier, SIGNAL('textChanged(const QString&)'),
+		self.connect(self.le_TetheringIdentifier, SIGNAL('editFinished()'),
 				self.le_tethering_identifier_changed)
-		self.connect(self.le_TetheringPassphrase, SIGNAL('textChanged(const QString&)'),
+		self.connect(self.le_TetheringPassphrase, SIGNAL('editFinished()'),
 				self.le_tethering_passphrase_changed)
 
 		self.technology = dbus.Interface(
@@ -229,10 +229,12 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		enable = not self.properties["Tethering"]
 		self.technology.SetProperty("Tethering", enable)
 
-	def le_tethering_identifier_changed(self, identifier):
+	def le_tethering_identifier_changed(self):
+		identifier = self.le_TetherningIdentifier.getText()
 		self.technology.SetProperty("TetheringIdentifier", identifier)
 
-	def le_tethering_passphrase_changed(self, passphrase):
+	def le_tethering_passphrase_changed(self):
+		passphrase = self.le_TetheringPassphrase.getText()
 		self.technology.SetProperty("TetheringPassphrase", passphrase)
 
 	def property_changed(self, name, value):
