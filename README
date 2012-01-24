@@ -1,5 +1,8 @@
 Simple Python based UI for ConnMan
 
+This UI is for debugging purposes. Do not look too closely how it is
+implemented. The author has no clue on UI programming.
+
 In order to run Imposter you need following dependencies resolved:
 
    Python 2.x
