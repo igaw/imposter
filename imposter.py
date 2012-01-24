@@ -253,7 +253,10 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 				str = "enabled"
 			self.pb_Powered.setText(str)
 		elif name == "Connected":
-			self.la_Connected.setText(value)
+			str = "true"
+			if value:
+				str = "false"
+			self.la_Connected.setText(str)
 		elif name == "Name":
 			self.gb_Name.setTitle(value)
 		elif name == "Type":
