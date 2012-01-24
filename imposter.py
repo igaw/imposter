@@ -295,44 +295,47 @@ class ManagerPane(QWidget, Ui_Manager):
 		self.setupUi(self)
 
 		self.bus = dbus.SystemBus()
+		self.properties = {}
 
 		self.manager = dbus.Interface(
 				self.bus.get_object("net.connman", "/"),
 				"net.connman.Manager")
 
-		self.connect(self.cb_OfflineMode, SIGNAL('stateChanged(int)'),
-				self.cb_offline_mode)
-		self.connect(self.cb_SessionMode, SIGNAL('stateChanged(int)'),
-				self.cb_session_mode)
+		self.connect(self.pb_OfflineMode, SIGNAL('clicked()'),
+				self.pb_offline_mode_clicked)
+		self.connect(self.pb_SessionMode, SIGNAL('clicked()'),
+				self.pb_session_mode_clicked)
 
-	def cb_offline_mode(self, state):
-		mode = False
-		if state == 2:
-			mode = True
+	def pb_offline_mode_clicked(self):
+		enable = not self.properties["OfflineMode"]
+		self.manager.SetProperty("OfflineMode", enable)
 
-		self.manager.SetProperty("OfflineMode", mode)
-
-	def cb_session_mode(self, state):
-		mode = False
-		if state == 2:
-			mode = True
-
-		self.manager.SetProperty("SessionMode", mode)
+	def pb_session_mode_clicked(self):
+		enable = not self.properties["SessionMode"]
+		self.manager.SetProperty("SessionMode", enable)
 
 	def property_changed(self, name, value):
 		print "Manager PropertyChanged: ", name
 
+		self.properties[name] = value
+
 		if name == "State":
 			self.la_State.setText(value)
 		elif name == "OfflineMode":
-			self.cb_OfflineMode.setChecked(value)
+			str = "disabled"
+			if value:
+				str = "enabled"
+			self.pb_OfflineMode.setText(str)
 		elif name == "SessionMode":
-			self.cb_SessionMode.setChecked(value)
+			str = "disabled"
+			if value:
+				str = "enabled"
+			self.pb_SessionMode.setText(str)
 
 	def clear(self):
 		self.la_State.setText("n/a")
-		self.cb_OfflineMode.setChecked(0)
-		self.cb_SessionMode.setChecked(0)
+		self.pb_OfflineMode.setText("")
+		self.pb_SessionMode.setText("")
 
 class MainWidget(QWidget):
 	def __init__(self, parent=None):
