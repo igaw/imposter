@@ -191,9 +191,9 @@ class ServicePane(QWidget):
 			self.services[path].property_changed(name, value)
 
 	def clear(self):
-		for path, properties in self.services.items():
+		for path,_ in self.services.items():
 			print "Remove Service: ", path
-			self.remove_service(path, properties)
+			self.remove_service(path)
 
 
 class TechnologyEntry(QWidget, Ui_TechnologyEntry):
