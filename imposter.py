@@ -195,7 +195,6 @@ class ServicePane(QWidget):
 			print "Remove Service: ", path
 			self.remove_service(path)
 
-
 class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 	def __init__(self, parent, path, properties):
 		QWidget.__init__(self, parent)
