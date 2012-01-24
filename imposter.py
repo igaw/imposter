@@ -208,6 +208,8 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		for name, value in properties.items():
 			self.property_changed(name, value)
 
+		self.connect(self.pb_Scan, SIGNAL('clicked()'),
+				self.pb_scan_clicked)
 		self.connect(self.pb_Powered, SIGNAL('clicked()'),
 				self.pb_powered_clicked)
 		self.connect(self.pb_Tethering, SIGNAL('clicked()'),
@@ -220,6 +222,9 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		self.technology = dbus.Interface(
 				self.bus.get_object("net.connman", path),
 				"net.connman.Technology")
+
+	def pb_scan_clicked(self):
+		self.technology.Scan()
 
 	def pb_powered_clicked(self):
 		enable = not self.properties["Powered"]
