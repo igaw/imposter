@@ -214,9 +214,9 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 				self.pb_powered_clicked)
 		self.connect(self.pb_Tethering, SIGNAL('clicked()'),
 				self.pb_tethering_clicked)
-		self.connect(self.le_TetheringIdentifier, SIGNAL('editFinished()'),
+		self.connect(self.le_TetheringIdentifier, SIGNAL('editingFinished()'),
 				self.le_tethering_identifier_changed)
-		self.connect(self.le_TetheringPassphrase, SIGNAL('editFinished()'),
+		self.connect(self.le_TetheringPassphrase, SIGNAL('editingFinished()'),
 				self.le_tethering_passphrase_changed)
 
 		self.technology = dbus.Interface(
@@ -235,11 +235,17 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		self.technology.SetProperty("Tethering", enable)
 
 	def le_tethering_identifier_changed(self):
-		identifier = self.le_TetherningIdentifier.getText()
+		identifier = str(self.le_TetheringIdentifier.text())
+		if "TetheringIdentifier" in self.properties and	identifier == self.properties["TetheringIdentifier"]:
+			return
+
 		self.technology.SetProperty("TetheringIdentifier", identifier)
 
 	def le_tethering_passphrase_changed(self):
-		passphrase = self.le_TetheringPassphrase.getText()
+		passphrase = str(self.le_TetheringPassphrase.text())
+		if "TetheringPassphrase" in self.properties and	passphrase == self.properties["TetheringPassphrase"]:
+			return
+
 		self.technology.SetProperty("TetheringPassphrase", passphrase)
 
 	def property_changed(self, name, value):
