@@ -301,23 +301,28 @@ class ManagerPane(QWidget, Ui_Manager):
 		QWidget.__init__(self, parent)
 		self.setupUi(self)
 
-		self.bus = dbus.SystemBus()
 		self.properties = {}
-
-		self.manager = dbus.Interface(
-				self.bus.get_object("net.connman", "/"),
-				"net.connman.Manager")
+		self.manager = None
 
 		self.connect(self.pb_OfflineMode, SIGNAL('clicked()'),
 				self.pb_offline_mode_clicked)
 		self.connect(self.pb_SessionMode, SIGNAL('clicked()'),
 				self.pb_session_mode_clicked)
 
+	def set_manager(self, manager):
+		self.manger = manager
+
 	def pb_offline_mode_clicked(self):
+		if not self.manager:
+			return
+
 		enable = not self.properties["OfflineMode"]
 		self.manager.SetProperty("OfflineMode", enable)
 
 	def pb_session_mode_clicked(self):
+		if not self.manager:
+			return
+
 		enable = not self.properties["SessionMode"]
 		self.manager.SetProperty("SessionMode", enable)
 
@@ -340,7 +345,8 @@ class ManagerPane(QWidget, Ui_Manager):
 			self.pb_SessionMode.setText(str)
 
 	def clear(self):
-		self.la_State.setText("n/a")
+		self.manager = None
+		self.la_State.setText("ConnMan is not running")
 		self.pb_OfflineMode.setText("")
 		self.pb_SessionMode.setText("")
 
@@ -502,6 +508,7 @@ class MainWidget(QWidget):
 
 		self.services_added(self.manager.GetServices())
 
+		self.manager_pane.set_manager(self.manager)
 		for name, value in self.manager.GetProperties().items():
 			self.manager_pane.property_changed(name, value)
 
