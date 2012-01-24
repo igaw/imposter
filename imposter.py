@@ -16,6 +16,7 @@
 import signal
 import sys
 from service_entry_ui import Ui_ServiceEntry
+from technology_entry_ui  import Ui_TechnologyEntry
 from agent_ui import Ui_Agent
 from manager_ui  import Ui_Manager
 
@@ -195,38 +196,70 @@ class ServicePane(QWidget):
 			self.remove_service(path, properties)
 
 
-class TechnologyEntry(QCheckBox):
+class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 	def __init__(self, parent, path, properties):
 		QWidget.__init__(self, parent)
+		self.setupUi(self)
 
 		self.bus = dbus.SystemBus()
 		self.path = path
 		self.properties = properties
 
+		for name, value in properties.items():
+			self.property_changed(name, value)
+
+		self.connect(self.pb_Powered, SIGNAL('clicked()'),
+				self.pb_powered_clicked)
+		self.connect(self.pb_Tethering, SIGNAL('clicked()'),
+				self.pb_tethering_clicked)
+		self.connect(self.le_TetheringIdentifier, SIGNAL('textChanged(const QString&)'),
+				self.le_tethering_identifier_changed)
+		self.connect(self.le_TetheringPassphrase, SIGNAL('textChanged(const QString&)'),
+				self.le_tethering_passphrase_changed)
+
 		self.technology = dbus.Interface(
 				self.bus.get_object("net.connman", path),
 				"net.connman.Technology")
 
+	def pb_powered_clicked(self):
+		enable = not self.properties["Powered"]
+		self.technology.SetProperty("Powered", enable)
 
-		self.setText(properties["Name"])
-		self.setChecked(self.properties["Powered"])
+	def pb_tethering_clicked(self):
+		enable = not self.properties["Tethering"]
+		self.technology.SetProperty("Tethering", enable)
 
-		self.connect(self, SIGNAL('stateChanged(int)'),
-				self.cb_state_changed)
+	def le_tethering_identifier_changed(self, identifier):
+		self.technology.SetProperty("TetheringIdentifier", identifier)
 
-	def cb_state_changed(self, state):
-		powered = False
-		if state == 2:
-			powered = True
-
-		self.technology.SetProperty("Powered", powered)
-
+	def le_tethering_passphrase_changed(self, passphrase):
+		self.technology.SetProperty("TetheringPassphrase", passphrase)
 
 	def property_changed(self, name, value):
 		print "Technology PropertyChanged: ", name
 
-		if name is "Powered":
-			self.setChecked(value)
+		self.properties[name] = value
+
+		if name == "Powered":
+			str = "disabled"
+			if value:
+				str = "enabled"
+			self.pb_Powered.setText(str)
+		elif name == "Connected":
+			self.la_Connected.setText(value)
+		elif name == "Name":
+			self.gb_Name.setTitle(value)
+		elif name == "Type":
+			self.la_Type.setText(value)
+		elif name == "Tethering":
+			str = "disabled"
+			if value:
+				str = "enabled"
+			self.pb_Tethering.setText(str)
+		elif name == "TetheringIdentifier":
+			self.le_TetheringIdentifier.setText(value)
+		elif name == "TetheringPassphrase":
+			self.le_TetheringPassphrase.setText(value)
 
 class TechnologyPane(QWidget):
 	def __init__(self, parent=None):
