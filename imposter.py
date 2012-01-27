@@ -19,6 +19,7 @@ from service_entry_ui import Ui_ServiceEntry
 from technology_entry_ui  import Ui_TechnologyEntry
 from agent_ui import Ui_Agent
 from manager_ui  import Ui_Manager
+from session_dialog import SessionDialog
 
 from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer
 from PyQt4.QtGui import *
@@ -321,14 +322,19 @@ class ManagerPane(QWidget, Ui_Manager):
 
 		self.properties = {}
 		self.manager = None
+		self.sessions = []
 
 		self.connect(self.pb_OfflineMode, SIGNAL('clicked()'),
 				self.pb_offline_mode_clicked)
 		self.connect(self.pb_SessionMode, SIGNAL('clicked()'),
 				self.pb_session_mode_clicked)
+		self.connect(self.pb_CreateSession, SIGNAL('clicked()'),
+				self.pb_create_session_clicked)
 
 	def set_manager(self, manager):
-		self.manger = manager
+		self.manager = manager
+		for session in self.sessions:
+			session.set_manager(manager)
 
 	def pb_offline_mode_clicked(self):
 		if not self.manager:
@@ -343,6 +349,13 @@ class ManagerPane(QWidget, Ui_Manager):
 
 		enable = not self.properties["SessionMode"]
 		self.manager.SetProperty("SessionMode", enable)
+
+	def pb_create_session_clicked(self):
+		dialog = SessionDialog(self)
+		print self.manager
+		dialog.set_manager(self.manager)
+		dialog.show()
+		self.sessions.append(dialog)
 
 	def property_changed(self, name, value):
 		print "Manager PropertyChanged: ", name

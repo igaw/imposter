@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>176</width>
-    <height>118</height>
+    <width>236</width>
+    <height>146</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,16 +22,17 @@
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="1">
-         <widget class="QLabel" name="la_State">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>TextLabel</string>
+           <string>Offline Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="pb_SessionMode">
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>
@@ -49,24 +50,30 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
            <string>Session Mode</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label">
+        <item row="0" column="1">
+         <widget class="QLabel" name="la_State">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>Offline Mode</string>
+           <string>TextLabel</string>
           </property>
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QPushButton" name="pb_SessionMode">
+         <widget class="QPushButton" name="pb_CreateSession">
           <property name="text">
-           <string/>
+           <string>CreateSession</string>
           </property>
          </widget>
         </item>
