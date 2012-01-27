@@ -123,15 +123,23 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 
 	def set_name(self):
 		if "Name" not in self.properties:
-			self.la_Name.setText("")
+			self.la_Name.setText("bug?")
 			return
 
 		self.la_Name.setText(self.properties["Name"])
 
 	def set_state(self):
+		if "State" not in self.properties:
+			self.la_State.setText("bug?")
+			return
+
 		self.la_State.setText(self.properties["State"])
 
 	def set_button(self):
+		if "State" not in self.properties:
+			self.pb_Connect.setText("bug?")
+			return
+
 		if self.properties["State"] in ["ready", "connected", "online"]:
 			self.pb_Connect.setText("Disconnect")
 		else:
