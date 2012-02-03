@@ -201,9 +201,14 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		self.path = path
 		self.properties = properties
 
+		self.visible = True
+		self.toggle_visible()
+
 		for name, value in properties.items():
 			self.property_changed(name, value)
 
+		self.connect(self.pb_ToggleVisible, SIGNAL('clicked()'),
+			     self.toggle_visible)
 		self.connect(self.pb_Scan, SIGNAL('clicked()'),
 				self.pb_scan_clicked)
 		self.connect(self.pb_Powered, SIGNAL('clicked()'),
@@ -218,6 +223,22 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 		self.technology = dbus.Interface(
 				self.bus.get_object("net.connman", path),
 				"net.connman.Technology")
+
+	def toggle_visible(self):
+		self.visible = not self.visible
+
+		self.label1.setVisible(self.visible)
+		self.label2.setVisible(self.visible)
+		self.label3.setVisible(self.visible)
+		self.label4.setVisible(self.visible)
+		self.label5.setVisible(self.visible)
+		self.label6.setVisible(self.visible)
+		self.pb_Scan.setVisible(self.visible)
+		self.la_Connected.setVisible(self.visible)
+		self.la_Type.setVisible(self.visible)
+		self.pb_Tethering.setVisible(self.visible)
+		self.le_TetheringIdentifier.setVisible(self.visible)
+		self.le_TetheringPassphrase.setVisible(self.visible)
 
 	def pb_scan_clicked(self):
 		self.technology.Scan()
@@ -260,7 +281,7 @@ class TechnologyEntry(QWidget, Ui_TechnologyEntry):
 				str = "false"
 			self.la_Connected.setText(str)
 		elif name == "Name":
-			self.gb_Name.setTitle(value)
+			self.la_Name.setText(value)
 		elif name == "Type":
 			self.la_Type.setText(value)
 		elif name == "Tethering":
