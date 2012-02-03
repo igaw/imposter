@@ -16,6 +16,7 @@
 import signal
 import sys
 from service_entry_ui import Ui_ServiceEntry
+from service_pane_ui import Ui_ServicePane
 from technology_entry_ui  import Ui_TechnologyEntry
 from agent_ui import Ui_Agent
 from manager_ui  import Ui_Manager
@@ -162,31 +163,19 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 			self.set_state()
 			self.set_button()
 
-class ServicePane(QWidget):
+class ServicePane(QWidget, Ui_ServicePane):
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
+		self.setupUi(self)
 
 		self.services = {}
-		self.setup_ui()
-
-	def setup_ui(self):
-		self.hlayout = QHBoxLayout(self)
-		self.scroll = QScrollArea(self)
-		self.scroll.setWidgetResizable(True)
-		self.contents = QWidget()
-		self.vlayout = QVBoxLayout(self.contents)
-		self.scroll.setWidget(self.contents)
-		self.hlayout.addWidget(self.scroll)
-
-		self.contents.setLayout(self.vlayout)
-		self.setLayout(self.hlayout)
 
 	def add_service(self, path, properties):
 		if path in self.services:
 			print "Service already added ", path
 			return
 
-		entry = ServiceEntry(self.contents, path, properties)
+		entry = ServiceEntry(self, path, properties)
 		self.services[path]  = entry
 		self.vlayout.addWidget(self.services[path])
 
