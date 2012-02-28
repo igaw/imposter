@@ -171,6 +171,7 @@ class ServicePane(QWidget, Ui_ServicePane):
 		self.services = {}
 
 	def add_service(self, path, properties):
+		print "Services added: ", path
 		if path in self.services:
 			print "Service already added ", path
 			return
@@ -180,6 +181,7 @@ class ServicePane(QWidget, Ui_ServicePane):
 		self.vlayout.addWidget(self.services[path])
 
 	def remove_service(self, path):
+		print "Services removed: ", path
 		self.services[path].deleteLater()
 		del self.services[path]
 
@@ -473,11 +475,6 @@ class MainWidget(QWidget):
 							path, interface)
 		elif interface == "net.connman.Manager":
 			self.manager_pane.property_changed(name, value)
-
-			# XXX remove this when ServiceAdded/ServiceRemoved is added to ConnMan
-			if name == "Services":
-				self.service_pane.clear()
-				self.services_added(self.manager.GetServices())
 
 	def technology_added(self, path, properties):
 		self.tech_pane.add_technology(path, properties)
