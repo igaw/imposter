@@ -118,9 +118,19 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 		self.connect(self.pb_Connect, SIGNAL('clicked()'),
 				self.cb_clicked)
 
+		self.connect(self.cb_AutoConnect, SIGNAL('clicked()'),
+				self.cb_auto_connect)
+
+		self.connect(self.pb_Remove, SIGNAL('clicked()'),
+				self.cb_remove)
+
+		self.cb_Favorite.setEnabled(False)
+
 		self.set_name()
 		self.set_state()
 		self.set_button()
+		self.set_favorite()
+		self.set_autoconnect()
 
 	def set_name(self):
 		if "Name" not in self.properties:
@@ -146,11 +156,41 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 		else:
 			self.pb_Connect.setText("Connect")
 
+	def set_favorite(self):
+		if "Favorite" not in self.properties:
+			print "Favorite: bug?"
+			return
+
+
+		favorite = bool(self.properties["Favorite"])
+		print "Favorite: ", favorite
+		self.cb_Favorite.setChecked(favorite)
+
+	def set_autoconnect(self):
+		if "AutoConnect" not in self.properties:
+			print "AutoConnect: bug?"
+			return
+
+		autoconnect = bool(self.properties["AutoConnect"])
+		self.cb_AutoConnect.setChecked(autoconnect)
+
 	def cb_clicked(self):
 		if self.properties["State"] in ["ready", "connected", "online"]:
 			self.service.Disconnect()
 		else:
 			self.service.Connect()
+
+	def cb_auto_connect(self):
+		if "AutoConnect" not in self.properties:
+			print "AutoConnect: bug?"
+			return
+
+		autoconnect = not self.properties["AutoConnect"]
+
+		self.service.SetProperty("AutoConnect", dbus.Boolean(autoconnect))
+
+	def cb_remove(self):
+		self.service.Remove()
 
 	def property_changed(self, name, value):
 		print "Service PropertyChanged: ", name
@@ -162,6 +202,10 @@ class ServiceEntry(QWidget, Ui_ServiceEntry):
 		elif name == "State":
 			self.set_state()
 			self.set_button()
+		elif name == "Favorite":
+			self.set_favorite()
+		elif name == "AutoConnect":
+			self.set_autoconnect()
 
 class ServicePane(QWidget, Ui_ServicePane):
 	def __init__(self, parent=None):
