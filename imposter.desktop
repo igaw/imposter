@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=0.1
+Type=Link
+Name=imposter
+Comment=Simple Python based UI for ConnMan
+Exec=imposter
+TargetEnvironment=Unity

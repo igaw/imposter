@@ -10,3 +10,13 @@ In order to run Imposter you need following dependencies resolved:
 
 The icons are shamelessly stolen from carrick-ng project.
 git://git.moblin.org/carrick-ng
+
+* Running the application
+	cd src
+	python imposter.py
+
+* Generating source distribution package
+	python setup.py sdist
+
+* Generating RPM distribution package
+	python setup.py bdist_rpm
