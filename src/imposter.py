@@ -43,7 +43,9 @@ def get_resource_path(filename):
 class AgentUi(QDialog):
 	def __init__(self, parent, path, fields):
 		QWidget.__init__(self, parent)
-		self.ui = Ui_Agent()
+		ui_class, widget_class = uic.loadUiType(get_resource_path('ui/agent.ui'))
+		self.ui = ui_class()
+		self.ui.setupUi(self)
 
 		if fields.has_key("Passphrase"):
 			self.ui.label1.setText("Passphrase")
