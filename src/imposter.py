@@ -227,20 +227,26 @@ class ServicePane(QWidget):
 
 		self.services = {}
 
-	def add_service(self, path, properties):
-		print "Services added: ", path
-		if path in self.services:
-			print "Service already added ", path
-			return
+	def changed_services(self, services):
+		for i in range(self.ui.vlayout.count()):
+			item = self.ui.vlayout.takeAt(0)
+			self.ui.vlayout.removeItem(item)
 
-		entry = ServiceEntry(self, path, properties)
-		self.services[path]  = entry
-		self.ui.vlayout.addWidget(self.services[path])
+		for path, properties in services:
+			entry = None
+			if path in self.services:
+				entry = self.services[path]
+			else:
+				entry = ServiceEntry(self, path, properties)
+				self.services[path]  = entry
 
-	def remove_service(self, path):
-		print "Services removed: ", path
-		self.services[path].deleteLater()
-		del self.services[path]
+			self.ui.vlayout.addWidget(entry)
+
+	def remove_services(self, services):
+		for path in services:
+			print "Service removed: ", path
+			self.services[path].deleteLater()
+			del self.services[path]
 
 	def property_changed(self, name, value, path, interface):
 		if path in self.services:
@@ -545,9 +551,9 @@ class MainWidget(QWidget):
 	def technology_removed(self, path):
 		self.tech_pane.remove_technology(path)
 
-	def services_added(self, services):
-		for path, properties in services:
-			self.service_pane.add_service(path, properties)
+	def services_changed(self, changed_services, removed_services):
+		self.service_pane.remove_services(removed_services);
+		self.service_pane.changed_services(changed_services)
 
 	def services_removed(self, services):
 		for path in services:
@@ -573,17 +579,14 @@ class MainWidget(QWidget):
 		self.bus.add_signal_receiver(self.technology_removed,
 					bus_name ="net.connman",
 					signal_name = "TechnologyRemoved")
-		self.bus.add_signal_receiver(self.services_added,
+		self.bus.add_signal_receiver(self.services_changed,
 					bus_name ="net.connman",
-					signal_name = "ServicesAdded")
-		self.bus.add_signal_receiver(self.services_removed,
-					bus_name ="net.connman",
-					signal_name = "ServicesRemoved")
+					signal_name = "ServicesChanged")
 
 		for path, properties in self.manager.GetTechnologies():
 			self.technology_added(path, properties)
 
-		self.services_added(self.manager.GetServices())
+		self.services_changed(self.manager.GetServices(), [])
 
 		self.manager_pane.set_manager(self.manager)
 		for name, value in self.manager.GetProperties().items():
