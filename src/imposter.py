@@ -33,6 +33,7 @@ dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+
 def get_resource_path(filename):
     if __name__ == '__main__':
         return filename
@@ -40,14 +41,16 @@ def get_resource_path(filename):
     return os.path.join(distutils.sysconfig.get_python_lib(),
                 'imposter', filename)
 
+
 class AgentUi(QDialog):
     def __init__(self, parent, path, fields):
         QWidget.__init__(self, parent)
-        ui_class, widget_class = uic.loadUiType(get_resource_path('ui/agent.ui'))
+        ui_class, widget_class = uic.loadUiType(
+                                    get_resource_path('ui/agent.ui'))
         self.ui = ui_class()
         self.ui.setupUi(self)
 
-        if fields.has_key("Passphrase"):
+        if 'Passphrase' in fields:
             self.ui.label1.setText("Passphrase")
             self.ui.label2.setVisible(False)
             self.ui.lineEdit2.setVisible(False)
@@ -69,6 +72,7 @@ class AgentUi(QDialog):
         print response
 
         return response
+
 
 class Agent(dbus.service.Object):
     def __init__(self, parent):
@@ -110,11 +114,13 @@ class Agent(dbus.service.Object):
     def Cancel(self):
         print "Cancel"
 
+
 class ServiceEntry(QWidget):
     def __init__(self, parent, path, properties):
         QWidget.__init__(self, parent)
 
-        ui_class, widget_class = uic.loadUiType(get_resource_path('ui/service_entry.ui'))
+        ui_class, widget_class = uic.loadUiType(
+                get_resource_path('ui/service_entry.ui'))
         self.ui = ui_class()
         self.ui.setupUi(self)
 
@@ -217,11 +223,13 @@ class ServiceEntry(QWidget):
         elif name == "AutoConnect":
             self.set_autoconnect()
 
+
 class ServicePane(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
-        ui_class, widget_class = uic.loadUiType(get_resource_path('ui/service_pane.ui'))
+        ui_class, widget_class = uic.loadUiType(
+                get_resource_path('ui/service_pane.ui'))
         self.ui = ui_class()
         self.ui.setupUi(self)
 
@@ -238,7 +246,7 @@ class ServicePane(QWidget):
                 entry = self.services[path]
             else:
                 entry = ServiceEntry(self, path, properties)
-                self.services[path]  = entry
+                self.services[path] = entry
 
             self.ui.vlayout.addWidget(entry)
 
@@ -253,15 +261,17 @@ class ServicePane(QWidget):
             self.services[path].property_changed(name, value)
 
     def clear(self):
-        for path,_ in self.services.items():
+        for path, _ in self.services.items():
             print "Remove Service: ", path
             self.remove_service(path)
+
 
 class TechnologyEntry(QWidget):
     def __init__(self, parent, path, properties):
         QWidget.__init__(self, parent)
 
-        ui_class, widget_class = uic.loadUiType(get_resource_path('ui/technology_entry.ui'))
+        ui_class, widget_class = uic.loadUiType(
+                get_resource_path('ui/technology_entry.ui'))
         self.ui = ui_class()
         self.ui.setupUi(self)
 
@@ -283,9 +293,11 @@ class TechnologyEntry(QWidget):
                 self.pb_powered_clicked)
         self.connect(self.ui.pb_Tethering, SIGNAL('clicked()'),
                 self.pb_tethering_clicked)
-        self.connect(self.ui.le_TetheringIdentifier, SIGNAL('editingFinished()'),
+        self.connect(self.ui.le_TetheringIdentifier,
+                SIGNAL('editingFinished()'),
                 self.le_tethering_identifier_changed)
-        self.connect(self.ui.le_TetheringPassphrase, SIGNAL('editingFinished()'),
+        self.connect(self.ui.le_TetheringPassphrase,
+                SIGNAL('editingFinished()'),
                 self.le_tethering_passphrase_changed)
 
         self.technology = dbus.Interface(
@@ -321,14 +333,16 @@ class TechnologyEntry(QWidget):
 
     def le_tethering_identifier_changed(self):
         identifier = str(self.ui.le_TetheringIdentifier.text())
-        if "TetheringIdentifier" in self.properties and    identifier == self.properties["TetheringIdentifier"]:
+        if ("TetheringIdentifier" in self.properties and
+                identifier == self.properties["TetheringIdentifier"]):
             return
 
         self.technology.SetProperty("TetheringIdentifier", identifier)
 
     def le_tethering_passphrase_changed(self):
         passphrase = str(self.ui.le_TetheringPassphrase.text())
-        if "TetheringPassphrase" in self.properties and    passphrase == self.properties["TetheringPassphrase"]:
+        if ("TetheringPassphrase" in self.properties and
+                passphrase == self.properties["TetheringPassphrase"]):
             return
 
         self.technology.SetProperty("TetheringPassphrase", passphrase)
@@ -362,6 +376,7 @@ class TechnologyEntry(QWidget):
         elif name == "TetheringPassphrase":
             self.ui.le_TetheringPassphrase.setText(value)
 
+
 class TechnologyPane(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -392,11 +407,13 @@ class TechnologyPane(QWidget):
         for path, properties in self.techs.items():
             self.remove_technology(path)
 
+
 class ManagerPane(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
-        ui_class, widget_class = uic.loadUiType(get_resource_path('ui/manager.ui'))
+        ui_class, widget_class = uic.loadUiType(
+                get_resource_path('ui/manager.ui'))
         self.ui = ui_class()
         self.ui.setupUi(self)
 
@@ -448,6 +465,7 @@ class ManagerPane(QWidget):
         self.ui.la_State.setText("ConnMan is not running")
         self.ui.pb_OfflineMode.setText("")
         self.ui.pb_SessionMode.setText("")
+
 
 class MainWidget(QWidget):
     def __init__(self, parent=None):
@@ -501,7 +519,8 @@ class MainWidget(QWidget):
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setContextMenu(self.trayIconMenu)
-        self.trayIcon.setIcon(QIcon(get_resource_path("icons/network-active.png")))
+        self.trayIcon.setIcon(
+                QIcon(get_resource_path("icons/network-active.png")))
 
         self.trayIcon.show()
 
@@ -552,7 +571,7 @@ class MainWidget(QWidget):
         self.tech_pane.remove_technology(path)
 
     def services_changed(self, changed_services, removed_services):
-        self.service_pane.remove_services(removed_services);
+        self.service_pane.remove_services(removed_services)
         self.service_pane.changed_services(changed_services)
 
     def services_removed(self, services):
@@ -569,19 +588,19 @@ class MainWidget(QWidget):
 
         self.bus.add_signal_receiver(self.property_changed,
                     bus_name="net.connman",
-                    signal_name = "PropertyChanged",
-                    path_keyword ="path",
-                    interface_keyword ="interface")
+                    signal_name="PropertyChanged",
+                    path_keyword="path",
+                    interface_keyword="interface")
 
         self.bus.add_signal_receiver(self.technology_added,
-                    bus_name ="net.connman",
-                    signal_name = "TechnologyAdded")
+                    bus_name="net.connman",
+                    signal_name="TechnologyAdded")
         self.bus.add_signal_receiver(self.technology_removed,
-                    bus_name ="net.connman",
-                    signal_name = "TechnologyRemoved")
+                    bus_name="net.connman",
+                    signal_name="TechnologyRemoved")
         self.bus.add_signal_receiver(self.services_changed,
-                    bus_name ="net.connman",
-                    signal_name = "ServicesChanged")
+                    bus_name="net.connman",
+                    signal_name="ServicesChanged")
 
         for path, properties in self.manager.GetTechnologies():
             self.technology_added(path, properties)
@@ -603,6 +622,7 @@ class MainWidget(QWidget):
         self.tech_pane.clear()
         self.manager_pane.clear()
         self.service_pane.clear()
+
 
 def main():
     app = QApplication(sys.argv)
