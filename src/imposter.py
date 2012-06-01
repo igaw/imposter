@@ -255,7 +255,7 @@ class ServicePane(QWidget):
 	def clear(self):
 		for path,_ in self.services.items():
 			print "Remove Service: ", path
-			self.remove_service(path)
+			self.remove_services(path)
 
 class TechnologyEntry(QWidget):
 	def __init__(self, parent, path, properties):
@@ -557,7 +557,7 @@ class MainWidget(QWidget):
 
 	def services_removed(self, services):
 		for path in services:
-			self.service_pane.remove_service(path)
+			self.service_pane.remove_services(path)
 
 	def connman_up(self):
 		self.manager = dbus.Interface(self.bus.get_object("net.connman", "/"),
