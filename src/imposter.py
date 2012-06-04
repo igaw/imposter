@@ -44,7 +44,7 @@ def get_resource_path(filename):
 
 class AgentUi(QDialog):
     def __init__(self, parent, path, fields):
-        QWidget.__init__(self, parent)
+        QDialog.__init__(self, parent)
         ui_class, widget_class = uic.loadUiType(
                                     get_resource_path('ui/agent.ui'))
         self.ui = ui_class()
