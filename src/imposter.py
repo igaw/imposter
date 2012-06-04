@@ -51,11 +51,11 @@ class AgentUi(QDialog):
         self.ui.setupUi(self)
 
         if 'Passphrase' in fields:
-            self.ui.label1.setText("Passphrase")
+            self.ui.label1.setText('Passphrase')
             self.ui.label2.setVisible(False)
             self.ui.lineEdit2.setVisible(False)
         else:
-            print "No method to answer the input request"
+            print 'No method to answer the input request'
 
     def accept(self):
         self.hide()
@@ -67,7 +67,7 @@ class AgentUi(QDialog):
 
     def get_response(self):
         response = {}
-        response["Passphrase"] = str(self.ui.lineEdit1.text())
+        response['Passphrase'] = str(self.ui.lineEdit1.text())
 
         print response
 
@@ -79,27 +79,27 @@ class Agent(dbus.service.Object):
         dbus.service.Object.__init__(self)
         self.parent = parent
 
-    @dbus.service.method("net.connman.Agent",
+    @dbus.service.method('net.connman.Agent',
                 in_signature='', out_signature='')
     def Release(self):
-        print "Release"
+        print 'Release'
 
-    @dbus.service.method("net.connman.Agent",
+    @dbus.service.method('net.connman.Agent',
                 in_signature='os', out_signature='')
     def ReportError(self, path, error):
-        print "ReportError"
+        print 'ReportError'
         print path, error
 
-    @dbus.service.method("net.connman.Agent",
+    @dbus.service.method('net.connman.Agent',
                 in_signature='os', out_signature='')
     def RequestBrowser(self, path, url):
-        print "RequestBrowser"
+        print 'RequestBrowser'
 
-    @dbus.service.method("net.connman.Agent",
+    @dbus.service.method('net.connman.Agent',
                 in_signature='oa{sv}', out_signature='a{sv}',
-                async_callbacks=("return_cb", "raise_cb"))
+                async_callbacks=('return_cb', 'raise_cb'))
     def RequestInput(self, path, fields, return_cb, raise_cb):
-        print "RequestInput"
+        print 'RequestInput'
 
         def handleRequest():
             dialog = AgentUi(self.parent, path, fields)
@@ -109,10 +109,10 @@ class Agent(dbus.service.Object):
 
         QTimer.singleShot(10, handleRequest)
 
-    @dbus.service.method("net.connman.Agent",
+    @dbus.service.method('net.connman.Agent',
                 in_signature='', out_signature='')
     def Cancel(self):
-        print "Cancel"
+        print 'Cancel'
 
 
 class ServiceEntry(QWidget):
@@ -129,8 +129,8 @@ class ServiceEntry(QWidget):
         self.properties = properties
 
         self.service = dbus.Interface(
-                self.bus.get_object("net.connman", path),
-                "net.connman.Service")
+                self.bus.get_object('net.connman', path),
+                'net.connman.Service')
 
         self.connect(self.ui.pb_Connect, SIGNAL('clicked()'),
                 self.cb_clicked)
@@ -150,77 +150,77 @@ class ServiceEntry(QWidget):
         self.set_autoconnect()
 
     def set_name(self):
-        if "Name" not in self.properties:
-            self.ui.la_Name.setText("bug?")
+        if 'Name' not in self.properties:
+            self.ui.la_Name.setText('bug?')
             return
 
-        self.ui.la_Name.setText(self.properties["Name"])
+        self.ui.la_Name.setText(self.properties['Name'])
 
     def set_state(self):
-        if "State" not in self.properties:
-            self.ui.la_State.setText("bug?")
+        if 'State' not in self.properties:
+            self.ui.la_State.setText('bug?')
             return
 
-        self.ui.la_State.setText(self.properties["State"])
+        self.ui.la_State.setText(self.properties['State'])
 
     def set_button(self):
-        if "State" not in self.properties:
-            self.ui.pb_Connect.setText("bug?")
+        if 'State' not in self.properties:
+            self.ui.pb_Connect.setText('bug?')
             return
 
-        if self.properties["State"] in ["ready", "connected", "online"]:
-            self.ui.pb_Connect.setText("Disconnect")
+        if self.properties['State'] in ['ready', 'connected', 'online']:
+            self.ui.pb_Connect.setText('Disconnect')
         else:
-            self.ui.pb_Connect.setText("Connect")
+            self.ui.pb_Connect.setText('Connect')
 
     def set_favorite(self):
-        if "Favorite" not in self.properties:
-            print "Favorite: bug?"
+        if 'Favorite' not in self.properties:
+            print 'Favorite: bug?'
             return
 
-        favorite = bool(self.properties["Favorite"])
-        print "Favorite: ", favorite
+        favorite = bool(self.properties['Favorite'])
+        print 'Favorite: ', favorite
         self.ui.cb_Favorite.setChecked(favorite)
 
     def set_autoconnect(self):
-        if "AutoConnect" not in self.properties:
-            print "AutoConnect: bug?"
+        if 'AutoConnect' not in self.properties:
+            print 'AutoConnect: bug?'
             return
 
-        autoconnect = bool(self.properties["AutoConnect"])
+        autoconnect = bool(self.properties['AutoConnect'])
         self.ui.cb_AutoConnect.setChecked(autoconnect)
 
     def cb_clicked(self):
-        if self.properties["State"] in ["ready", "connected", "online"]:
+        if self.properties['State'] in ['ready', 'connected', 'online']:
             self.service.Disconnect()
         else:
             self.service.Connect()
 
     def cb_auto_connect(self):
-        if "AutoConnect" not in self.properties:
-            print "AutoConnect: bug?"
+        if 'AutoConnect' not in self.properties:
+            print 'AutoConnect: bug?'
             return
 
-        autoconnect = not self.properties["AutoConnect"]
+        autoconnect = not self.properties['AutoConnect']
 
-        self.service.SetProperty("AutoConnect", dbus.Boolean(autoconnect))
+        self.service.SetProperty('AutoConnect', dbus.Boolean(autoconnect))
 
     def cb_remove(self):
         self.service.Remove()
 
     def property_changed(self, name, value):
-        print "Service PropertyChanged: ", name
+        print 'Service PropertyChanged: ', name
 
         self.properties[name] = value
 
-        if name == "Name":
+        if name == 'Name':
             self.set_name()
-        elif name == "State":
+        elif name == 'State':
             self.set_state()
             self.set_button()
-        elif name == "Favorite":
+        elif name == 'Favorite':
             self.set_favorite()
-        elif name == "AutoConnect":
+        elif name == 'AutoConnect':
             self.set_autoconnect()
 
 
@@ -252,7 +252,7 @@ class ServicePane(QWidget):
 
     def remove_services(self, services):
         for path in services:
-            print "Service removed: ", path
+            print 'Service removed: ', path
             self.services[path].deleteLater()
             del self.services[path]
 
@@ -262,7 +262,7 @@ class ServicePane(QWidget):
 
     def clear(self):
         for path, _ in self.services.items():
-            print "Remove Service: ", path
+            print 'Remove Service: ', path
             self.remove_service(path)
 
 
@@ -301,8 +301,8 @@ class TechnologyEntry(QWidget):
                 self.le_tethering_passphrase_changed)
 
         self.technology = dbus.Interface(
-                self.bus.get_object("net.connman", path),
-                "net.connman.Technology")
+                self.bus.get_object('net.connman', path),
+                'net.connman.Technology')
 
     def toggle_visible(self):
         self.visible = not self.visible
@@ -324,56 +324,56 @@ class TechnologyEntry(QWidget):
         self.technology.Scan()
 
     def pb_powered_clicked(self):
-        enable = not self.properties["Powered"]
-        self.technology.SetProperty("Powered", enable)
+        enable = not self.properties['Powered']
+        self.technology.SetProperty('Powered', enable)
 
     def pb_tethering_clicked(self):
-        enable = not self.properties["Tethering"]
-        self.technology.SetProperty("Tethering", enable)
+        enable = not self.properties['Tethering']
+        self.technology.SetProperty('Tethering', enable)
 
     def le_tethering_identifier_changed(self):
         identifier = str(self.ui.le_TetheringIdentifier.text())
-        if ("TetheringIdentifier" in self.properties and
-                identifier == self.properties["TetheringIdentifier"]):
+        if ('TetheringIdentifier' in self.properties and
+                identifier == self.properties['TetheringIdentifier']):
             return
 
-        self.technology.SetProperty("TetheringIdentifier", identifier)
+        self.technology.SetProperty('TetheringIdentifier', identifier)
 
     def le_tethering_passphrase_changed(self):
         passphrase = str(self.ui.le_TetheringPassphrase.text())
-        if ("TetheringPassphrase" in self.properties and
-                passphrase == self.properties["TetheringPassphrase"]):
+        if ('TetheringPassphrase' in self.properties and
+                passphrase == self.properties['TetheringPassphrase']):
             return
 
-        self.technology.SetProperty("TetheringPassphrase", passphrase)
+        self.technology.SetProperty('TetheringPassphrase', passphrase)
 
     def property_changed(self, name, value):
-        print "Technology PropertyChanged: ", name
+        print 'Technology PropertyChanged: ', name
 
         self.properties[name] = value
 
-        if name == "Powered":
-            str = "disabled"
+        if name == 'Powered':
+            val = 'disabled'
             if value:
-                str = "enabled"
-            self.ui.pb_Powered.setText(str)
-        elif name == "Connected":
-            str = "true"
+                val = 'enabled'
+            self.ui.pb_Powered.setText(val)
+        elif name == 'Connected':
+            val = 'true'
             if value:
-                str = "false"
-            self.ui.la_Connected.setText(str)
-        elif name == "Name":
+                val = 'false'
+            self.ui.la_Connected.setText(val)
+        elif name == 'Name':
             self.ui.la_Name.setText(value)
-        elif name == "Type":
+        elif name == 'Type':
             self.ui.la_Type.setText(value)
-        elif name == "Tethering":
-            str = "disabled"
+        elif name == 'Tethering':
+            val = 'disabled'
             if value:
-                str = "enabled"
-            self.ui.pb_Tethering.setText(str)
-        elif name == "TetheringIdentifier":
+                val = 'enabled'
+            self.ui.pb_Tethering.setText(val)
+        elif name == 'TetheringIdentifier':
             self.ui.le_TetheringIdentifier.setText(value)
-        elif name == "TetheringPassphrase":
+        elif name == 'TetheringPassphrase':
             self.ui.le_TetheringPassphrase.setText(value)
 
 
@@ -388,13 +388,13 @@ class TechnologyPane(QWidget):
         if path in self.techs:
             return
 
-        print "Add Technology ", path
+        print 'Add Technology ', path
         entry = TechnologyEntry(self, path, properties)
         self.layout.addWidget(entry)
         self.techs[path] = entry
 
     def remove_technology(self, path):
-        print "Remove Technology ", path
+        print 'Remove Technology ', path
         self.techs[path].deleteLater()
         del self.techs[path]
 
@@ -432,39 +432,39 @@ class ManagerPane(QWidget):
         if not self.manager:
             return
 
-        enable = not self.properties["OfflineMode"]
-        self.manager.SetProperty("OfflineMode", enable)
+        enable = not self.properties['OfflineMode']
+        self.manager.SetProperty('OfflineMode', enable)
 
     def pb_session_mode_clicked(self):
         if not self.manager:
             return
 
-        enable = not self.properties["SessionMode"]
-        self.manager.SetProperty("SessionMode", enable)
+        enable = not self.properties['SessionMode']
+        self.manager.SetProperty('SessionMode', enable)
 
     def property_changed(self, name, value):
-        print "Manager PropertyChanged: ", name
+        print 'Manager PropertyChanged: ', name
 
         self.properties[name] = value
 
-        if name == "State":
+        if name == 'State':
             self.ui.la_State.setText(value)
-        elif name == "OfflineMode":
-            str = "disabled"
+        elif name == 'OfflineMode':
+            str = 'disabled'
             if value:
-                str = "enabled"
+                str = 'enabled'
             self.ui.pb_OfflineMode.setText(str)
-        elif name == "SessionMode":
-            str = "disabled"
+        elif name == 'SessionMode':
+            str = 'disabled'
             if value:
-                str = "enabled"
+                str = 'enabled'
             self.ui.pb_SessionMode.setText(str)
 
     def clear(self):
         self.manager = None
-        self.ui.la_State.setText("ConnMan is not running")
-        self.ui.pb_OfflineMode.setText("")
-        self.ui.pb_SessionMode.setText("")
+        self.ui.la_State.setText('ConnMan is not running')
+        self.ui.pb_OfflineMode.setText('')
+        self.ui.pb_SessionMode.setText('')
 
 
 class MainWidget(QWidget):
@@ -474,7 +474,7 @@ class MainWidget(QWidget):
         self.bus = dbus.SystemBus()
         self.manager = None
         self.agent = None
-        self.agent_path = "/imposter_agent"
+        self.agent_path = '/imposter_agent'
 
         self.setup_ui()
         self.create_system_tray()
@@ -510,21 +510,21 @@ class MainWidget(QWidget):
         self.setLayout(self.mainLayout)
 
     def create_system_tray(self):
-        self.quitAction = QAction(self.tr("&Quit"), self)
+        self.quitAction = QAction(self.tr('&Quit'), self)
         QObject.connect(self.quitAction,
-                       SIGNAL("triggered()"), qApp,
-                       SLOT("quit()"))
+                       SIGNAL('triggered()'), qApp,
+                       SLOT('quit()'))
 
         self.trayIconMenu = QMenu(self)
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setContextMenu(self.trayIconMenu)
         self.trayIcon.setIcon(
-                QIcon(get_resource_path("icons/network-active.png")))
+                QIcon(get_resource_path('icons/network-active.png')))
 
         self.trayIcon.show()
 
-        traySignal = "activated(QSystemTrayIcon::ActivationReason)"
+        traySignal = 'activated(QSystemTrayIcon::ActivationReason)'
         QObject.connect(self.trayIcon, SIGNAL(traySignal),
                 self.__icon_activated)
 
@@ -544,10 +544,10 @@ class MainWidget(QWidget):
     def connman_name_owner_changed(self, proxy):
         try:
             if proxy:
-                print "ConnMan appeared on D-Bus ", str(proxy)
+                print 'ConnMan appeared on D-Bus ', str(proxy)
                 self.connman_up()
             else:
-                print "ConnMan disappeared on D-Bus"
+                print 'ConnMan disappeared on D-Bus'
                 self.connman_down()
 
         except dbus.DBusException:
@@ -555,13 +555,13 @@ class MainWidget(QWidget):
             exit(1)
 
     def property_changed(self, name, value, path, interface):
-        if interface == "net.connman.Service":
+        if interface == 'net.connman.Service':
             self.service_pane.property_changed(name, value,
                                path, interface)
-        elif interface == "net.connman.Technology":
+        elif interface == 'net.connman.Technology':
             self.tech_pane.property_changed(name, value,
                             path, interface)
-        elif interface == "net.connman.Manager":
+        elif interface == 'net.connman.Manager':
             self.manager_pane.property_changed(name, value)
 
     def technology_added(self, path, properties):
@@ -579,28 +579,28 @@ class MainWidget(QWidget):
             self.service_pane.remove_service(path)
 
     def connman_up(self):
-        self.manager = dbus.Interface(self.bus.get_object("net.connman", "/"),
-                          "net.connman.Manager")
+        self.manager = dbus.Interface(self.bus.get_object('net.connman', '/'),
+                          'net.connman.Manager')
 
         self.agent = Agent(self)
         self.agent.add_to_connection(self.bus, self.agent_path)
         self.manager.RegisterAgent(self.agent_path)
 
         self.bus.add_signal_receiver(self.property_changed,
-                    bus_name="net.connman",
-                    signal_name="PropertyChanged",
-                    path_keyword="path",
-                    interface_keyword="interface")
+                    bus_name='net.connman',
+                    signal_name='PropertyChanged',
+                    path_keyword='path',
+                    interface_keyword='interface')
 
         self.bus.add_signal_receiver(self.technology_added,
-                    bus_name="net.connman",
-                    signal_name="TechnologyAdded")
+                    bus_name='net.connman',
+                    signal_name='TechnologyAdded')
         self.bus.add_signal_receiver(self.technology_removed,
-                    bus_name="net.connman",
-                    signal_name="TechnologyRemoved")
+                    bus_name='net.connman',
+                    signal_name='TechnologyRemoved')
         self.bus.add_signal_receiver(self.services_changed,
-                    bus_name="net.connman",
-                    signal_name="ServicesChanged")
+                    bus_name='net.connman',
+                    signal_name='ServicesChanged')
 
         for path, properties in self.manager.GetTechnologies():
             self.technology_added(path, properties)
@@ -630,5 +630,5 @@ def main():
     myapp.show()
     sys.exit(app.exec_())
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
