@@ -545,6 +545,11 @@ class MainWidget(QWidget):
         try:
             if proxy:
                 print 'ConnMan appeared on D-Bus ', str(proxy)
+                self.connman_down() # make sure we really clear it
+                                    # stuff, e.g. this is needed when
+                                    # connman crashes. The python
+                                    # D-Bus binding seems not to call
+                                    # the down all the time.
                 self.connman_up()
             else:
                 print 'ConnMan disappeared on D-Bus'
