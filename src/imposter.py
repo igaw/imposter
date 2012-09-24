@@ -19,7 +19,7 @@ import sys
 import os
 
 from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer
+from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer, Qt
 from PyQt4.QtGui import *
 
 import distutils.sysconfig
@@ -472,6 +472,7 @@ class MainWidget(QWidget):
         QWidget.__init__(self, parent)
         self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
         self.setFocusPolicy(Qt.StrongFocus)
+        self.shutdown_system = False
 
         self.bus = dbus.SystemBus()
         self.manager = None
@@ -533,7 +534,11 @@ class MainWidget(QWidget):
     def closeEvent(self, event):
         self.hide()
         self.trayIcon.show()
-        event.ignore()
+        if self.shutdown_system == False:
+            event.ignore()
+
+    def set_shutdown(self, value):
+        self.shutdown_system = value
 
     def __icon_activated(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
@@ -631,10 +636,18 @@ class MainWidget(QWidget):
         self.service_pane.clear()
 
 
+class MyApplication(QApplication):
+    def set_widget(self, widget):
+        self.main_windget = widget
+
+    def commitData(self, sm):
+        self.main_windget.set_shutdown(True)
+
 def main():
-    app = QApplication(sys.argv)
-    myapp = MainWidget()
-    myapp.show()
+    app = MyApplication(sys.argv)
+    mainwidget = MainWidget()
+    mainwidget.show()
+    app.set_widget(mainwidget)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
