@@ -546,6 +546,7 @@ class MainWidget(QWidget):
                 self.hide()
                 self.trayIcon.show()
             else:
+                self.raise_()
                 self.show()
 
     def connman_name_owner_changed(self, proxy):
