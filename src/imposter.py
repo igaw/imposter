@@ -541,7 +541,7 @@ class MainWidget(QWidget):
         self.shutdown_system = value
 
     def __icon_activated(self, reason):
-        if reason == QSystemTrayIcon.DoubleClick:
+        if reason == QSystemTrayIcon.DoubleClick or reason == QSystemTrayIcon.Trigger:
             if self.isVisible():
                 self.hide()
                 self.trayIcon.show()
