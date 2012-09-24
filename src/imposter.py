@@ -470,6 +470,8 @@ class ManagerPane(QWidget):
 class MainWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
+        self.setFocusPolicy(Qt.StrongFocus)
 
         self.bus = dbus.SystemBus()
         self.manager = None
