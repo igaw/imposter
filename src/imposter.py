@@ -479,6 +479,11 @@ class MainWidget(QWidget):
         self.agent = None
         self.agent_path = '/imposter_agent'
 
+        self.manager_state = 'offline'
+        self.default_service = ''
+        self.tech = ''
+        self.strength = 0
+
         self.setup_ui()
         self.create_system_tray()
 
@@ -522,9 +527,7 @@ class MainWidget(QWidget):
         self.trayIconMenu.addAction(self.quitAction)
         self.trayIcon = QSystemTrayIcon(self)
         self.trayIcon.setContextMenu(self.trayIconMenu)
-        self.trayIcon.setIcon(
-                QIcon(get_resource_path('icons/network-active.png')))
-
+        self.update_icon()
         self.trayIcon.show()
 
         traySignal = 'activated(QSystemTrayIcon::ActivationReason)'
@@ -569,13 +572,76 @@ class MainWidget(QWidget):
 
     def property_changed(self, name, value, path, interface):
         if interface == 'net.connman.Service':
+            if path == self.default_service:
+                if name == 'Strength':
+                    strength = int(value)
+                    if self.strength != strength:
+                        self.strength = strength
+                        self.update_icon()
             self.service_pane.property_changed(name, value,
                                path, interface)
         elif interface == 'net.connman.Technology':
             self.tech_pane.property_changed(name, value,
                             path, interface)
         elif interface == 'net.connman.Manager':
+            if name == 'State':
+                if self.manager_state != value:
+                    self.manager_state = value
+                    self.update_icon()
             self.manager_pane.property_changed(name, value)
+
+    def update_default_service(self, path, properties):
+        if self.default_service != path:
+            self.default_service = path
+
+            # if only the position has changed, we need to ask
+            # for the properties. we could also ask the service pane
+            # but then...
+            if 'Type' not in properties:
+                service = dbus.Interface(
+                    self.bus.get_object('net.connman', path),
+                    'net.connman.Service')
+                properties = service.GetProperties()
+
+            if 'Type' in properties:
+                self.tech = properties['Type']
+            if 'Strength' in properties:
+                self.strength = properties['Strength']
+            self.update_icon()
+
+    def update_icon(self):
+        path = None
+        if self.manager_state == 'offline':
+            path = 'icons/network-offline.png'
+        elif self.manager_state == 'idle':
+            path = 'icons/network-offline.png'
+        elif self.manager_state == 'ready':
+            path = 'icons/network-connecting.png'
+        elif self.manager_state == 'online':
+            if self.tech == 'cellular':
+                if self.strength < 50:
+                    path = 'icons/network-3g-weak.png'
+                else:
+                    path = 'icons/network-3g-strong.png'
+            elif self.tech == 'wifi':
+                if self.strength < 25:
+                    path = 'icons/network-wireless-weak.png'
+                elif self.strength < 75:
+                    path = 'icons/network-wireless-good.png'
+                else:
+                    path = 'icons/network-wireless-strong.png'
+            elif self.tech == 'bluetooth':
+                if self.strength < 50:
+                    path = 'icons/network-bluetooth-weak.png'
+                else:
+                    path = 'icons/network-bluetooth-strong.png'
+            elif self.tech == 'ethernet':
+                path = 'icons/network-active.png'
+
+        resource = get_resource_path(path)
+        print resource
+        if resource:
+            self.trayIcon.setIcon(QIcon(resource))
 
     def technology_added(self, path, properties):
         self.tech_pane.add_technology(path, properties)
@@ -584,6 +650,10 @@ class MainWidget(QWidget):
         self.tech_pane.remove_technology(path)
 
     def services_changed(self, changed_services, removed_services):
+        if len(changed_services) > 0:
+            (path, properties) = changed_services[0]
+            self.update_default_service(path, properties)
+
         self.service_pane.remove_services(removed_services)
         self.service_pane.changed_services(changed_services)
 
@@ -592,6 +662,7 @@ class MainWidget(QWidget):
             self.service_pane.remove_service(path)
 
     def connman_up(self):
+
         self.manager = dbus.Interface(self.bus.get_object('net.connman', '/'),
                           'net.connman.Manager')
 
@@ -622,9 +693,18 @@ class MainWidget(QWidget):
 
         self.manager_pane.set_manager(self.manager)
         for name, value in self.manager.GetProperties().items():
+            if name == 'State':
+                self.manager_state = value
+                self.update_icon()
             self.manager_pane.property_changed(name, value)
 
     def connman_down(self):
+        self.manager_state = 'offline'
+        self.default_service = ''
+        self.tech = ''
+        self.strength = 0
+        self.update_icon()
+
         if self.agent:
             self.agent.remove_from_connection(self.bus, self.agent_path)
             self.agent = None
