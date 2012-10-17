@@ -151,7 +151,7 @@ class ServiceEntry(QWidget):
 
     def set_name(self):
         if 'Name' not in self.properties:
-            self.ui.la_Name.setText('bug?')
+            self.ui.la_Name.setText('<hidden>')
             return
 
         self.ui.la_Name.setText(self.properties['Name'])
