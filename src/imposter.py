@@ -19,7 +19,7 @@ import sys
 import os
 
 from PyQt4 import uic
-from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer, Qt
+from PyQt4.QtCore import SIGNAL, SLOT, QObject, QTimer, Qt, QEvent
 from PyQt4.QtGui import *
 
 import distutils.sysconfig
@@ -470,10 +470,8 @@ class ManagerPane(QWidget):
 class MainWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
-        self.setFocusPolicy(Qt.StrongFocus)
         self.shutdown_system = False
-
+        self.setWindowFlags(Qt.Tool)
         self.bus = dbus.SystemBus()
         self.manager = None
         self.agent = None
@@ -534,9 +532,14 @@ class MainWidget(QWidget):
         QObject.connect(self.trayIcon, SIGNAL(traySignal),
                 self.__icon_activated)
 
+    def changeEvent(self, event):
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                self.hide()
+                event.accept()
+
     def closeEvent(self, event):
         self.hide()
-        self.trayIcon.show()
         if self.shutdown_system == False:
             event.ignore()
 
@@ -547,10 +550,10 @@ class MainWidget(QWidget):
         if reason == QSystemTrayIcon.DoubleClick or reason == QSystemTrayIcon.Trigger:
             if self.isVisible():
                 self.hide()
-                self.trayIcon.show()
             else:
-                self.raise_()
                 self.show()
+                self.raise_()
+                self.activateWindow()
 
     def connman_name_owner_changed(self, proxy):
         try:
