@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 #  Copyright (C) 2012  BMW Car IT GmbH. All rights reserved.
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ class AgentUi(QDialog):
             self.ui.label2.setVisible(False)
             self.ui.lineEdit2.setVisible(False)
         else:
-            print 'No method to answer the input request'
+            print('No method to answer the input request')
 
     def accept(self):
         self.hide()
@@ -69,7 +69,7 @@ class AgentUi(QDialog):
         response = {}
         response['Passphrase'] = str(self.ui.lineEdit1.text())
 
-        print response
+        print(response)
 
         return response
 
@@ -82,24 +82,24 @@ class Agent(dbus.service.Object):
     @dbus.service.method('net.connman.Agent',
                 in_signature='', out_signature='')
     def Release(self):
-        print 'Release'
+        print('Release')
 
     @dbus.service.method('net.connman.Agent',
                 in_signature='os', out_signature='')
     def ReportError(self, path, error):
-        print 'ReportError'
-        print path, error
+        print('ReportError')
+        print(path, error)
 
     @dbus.service.method('net.connman.Agent',
                 in_signature='os', out_signature='')
     def RequestBrowser(self, path, url):
-        print 'RequestBrowser'
+        print('RequestBrowser')
 
     @dbus.service.method('net.connman.Agent',
                 in_signature='oa{sv}', out_signature='a{sv}',
                 async_callbacks=('return_cb', 'raise_cb'))
     def RequestInput(self, path, fields, return_cb, raise_cb):
-        print 'RequestInput'
+        print('RequestInput')
 
         def handleRequest():
             dialog = AgentUi(self.parent, path, fields)
@@ -112,7 +112,7 @@ class Agent(dbus.service.Object):
     @dbus.service.method('net.connman.Agent',
                 in_signature='', out_signature='')
     def Cancel(self):
-        print 'Cancel'
+        print('Cancel')
 
 
 class ServiceEntry(QWidget):
@@ -175,30 +175,39 @@ class ServiceEntry(QWidget):
 
     def set_favorite(self):
         if 'Favorite' not in self.properties:
-            print 'Favorite: bug?'
+            print('Favorite: bug?')
             return
 
         favorite = bool(self.properties['Favorite'])
-        print 'Favorite: ', favorite
+        print('Favorite: ', favorite)
         self.ui.cb_Favorite.setChecked(favorite)
 
     def set_autoconnect(self):
         if 'AutoConnect' not in self.properties:
-            print 'AutoConnect: bug?'
+            print('AutoConnect: bug?')
             return
 
         autoconnect = bool(self.properties['AutoConnect'])
         self.ui.cb_AutoConnect.setChecked(autoconnect)
 
+    def reply_handler(self, r):
+        print(str(r))
+
+    def error_handler(self, e):
+        print(str(e))
+
     def cb_clicked(self):
         if self.properties['State'] in ['ready', 'connected', 'online']:
             self.service.Disconnect()
         else:
-            self.service.Connect()
+            self.service.Connect(reply_handler=self.reply_handler,
+                                 error_handler=self.error_handler)
+
+        print('cb_clicked: leave')
 
     def cb_auto_connect(self):
         if 'AutoConnect' not in self.properties:
-            print 'AutoConnect: bug?'
+            print('AutoConnect: bug?')
             return
 
         autoconnect = not self.properties['AutoConnect']
@@ -209,7 +218,7 @@ class ServiceEntry(QWidget):
         self.service.Remove()
 
     def property_changed(self, name, value):
-        print 'Service PropertyChanged: ', name
+        print('Service PropertyChanged: ', name)
 
         self.properties[name] = value
 
@@ -252,7 +261,7 @@ class ServicePane(QWidget):
 
     def remove_services(self, services):
         for path in services:
-            print 'Service removed: ', path
+            print('Service removed: ', path)
             self.services[path].deleteLater()
             del self.services[path]
 
@@ -261,8 +270,8 @@ class ServicePane(QWidget):
             self.services[path].property_changed(name, value)
 
     def clear(self):
-        for path, _ in self.services.items():
-            print 'Remove Service: ', path
+        for path, _ in list(self.services.items()):
+            print('Remove Service: ', path)
             self.remove_service(path)
 
 
@@ -282,7 +291,7 @@ class TechnologyEntry(QWidget):
         self.visible = True
         self.toggle_visible()
 
-        for name, value in properties.items():
+        for name, value in list(properties.items()):
             self.property_changed(name, value)
 
         self.connect(self.ui.pb_ToggleVisible, SIGNAL('clicked()'),
@@ -348,7 +357,7 @@ class TechnologyEntry(QWidget):
         self.technology.SetProperty('TetheringPassphrase', passphrase)
 
     def property_changed(self, name, value):
-        print 'Technology PropertyChanged: ', name
+        print('Technology PropertyChanged: ', name)
 
         self.properties[name] = value
 
@@ -388,13 +397,13 @@ class TechnologyPane(QWidget):
         if path in self.techs:
             return
 
-        print 'Add Technology ', path
+        print('Add Technology ', path)
         entry = TechnologyEntry(self, path, properties)
         self.layout.addWidget(entry)
         self.techs[path] = entry
 
     def remove_technology(self, path):
-        print 'Remove Technology ', path
+        print('Remove Technology ', path)
         self.techs[path].deleteLater()
         del self.techs[path]
 
@@ -404,7 +413,7 @@ class TechnologyPane(QWidget):
         self.techs[path].property_changed(name, value)
 
     def clear(self):
-        for path, properties in self.techs.items():
+        for path, properties in list(self.techs.items()):
             self.remove_technology(path)
 
 
@@ -443,7 +452,7 @@ class ManagerPane(QWidget):
         self.manager.SetProperty('SessionMode', enable)
 
     def property_changed(self, name, value):
-        print 'Manager PropertyChanged: ', name
+        print('Manager PropertyChanged: ', name)
 
         self.properties[name] = value
 
@@ -558,7 +567,7 @@ class MainWidget(QWidget):
     def connman_name_owner_changed(self, proxy):
         try:
             if proxy:
-                print 'ConnMan appeared on D-Bus ', str(proxy)
+                print('ConnMan appeared on D-Bus ', str(proxy))
                 self.connman_down() # make sure we really clear it
                                     # stuff, e.g. this is needed when
                                     # connman crashes. The python
@@ -566,7 +575,7 @@ class MainWidget(QWidget):
                                     # the down all the time.
                 self.connman_up()
             else:
-                print 'ConnMan disappeared on D-Bus'
+                print('ConnMan disappeared on D-Bus')
                 self.connman_down()
 
         except dbus.DBusException:
@@ -642,7 +651,7 @@ class MainWidget(QWidget):
                 path = 'icons/network-active.png'
 
         resource = get_resource_path(path)
-        print resource
+        print(resource)
         if resource:
             self.trayIcon.setIcon(QIcon(resource))
 
@@ -695,7 +704,7 @@ class MainWidget(QWidget):
         self.services_changed(self.manager.GetServices(), [])
 
         self.manager_pane.set_manager(self.manager)
-        for name, value in self.manager.GetProperties().items():
+        for name, value in list(self.manager.GetProperties().items()):
             if name == 'State':
                 self.manager_state = value
                 self.update_icon()
