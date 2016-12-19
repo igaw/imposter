@@ -1,2 +1,2 @@
 rpm:
-	python setup.py bdist --format=rpm
+	python3 setup.py bdist --format=rpm
