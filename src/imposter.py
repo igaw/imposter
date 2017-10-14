@@ -532,9 +532,11 @@ class MainWidget(QWidget):
 
         self.trayIconMenu = QMenu(self)
         self.trayIconMenu.addAction(self.quitAction)
+
         self.trayIcon = QSystemTrayIcon(self)
+        resource = get_resource_path('icons/connman.png')
+        self.trayIcon.setIcon(QIcon(resource))
         self.trayIcon.setContextMenu(self.trayIconMenu)
-        self.update_icon()
         self.trayIcon.show()
 
         traySignal = 'activated(QSystemTrayIcon::ActivationReason)'
@@ -589,7 +591,6 @@ class MainWidget(QWidget):
                     strength = int(value)
                     if self.strength != strength:
                         self.strength = strength
-                        self.update_icon()
             self.service_pane.property_changed(name, value,
                                path, interface)
         elif interface == 'net.connman.Technology':
@@ -599,7 +600,6 @@ class MainWidget(QWidget):
             if name == 'State':
                 if self.manager_state != value:
                     self.manager_state = value
-                    self.update_icon()
             self.manager_pane.property_changed(name, value)
 
     def update_default_service(self, path, properties):
@@ -619,41 +619,6 @@ class MainWidget(QWidget):
                 self.tech = properties['Type']
             if 'Strength' in properties:
                 self.strength = properties['Strength']
-            self.update_icon()
-
-    def update_icon(self):
-        path = None
-        if self.manager_state == 'offline':
-            path = 'icons/network-offline.png'
-        elif self.manager_state == 'idle':
-            path = 'icons/network-offline.png'
-        elif self.manager_state == 'ready':
-            path = 'icons/network-connecting.png'
-        elif self.manager_state == 'online':
-            if self.tech == 'cellular':
-                if self.strength < 50:
-                    path = 'icons/network-3g-weak.png'
-                else:
-                    path = 'icons/network-3g-strong.png'
-            elif self.tech == 'wifi':
-                if self.strength < 25:
-                    path = 'icons/network-wireless-weak.png'
-                elif self.strength < 75:
-                    path = 'icons/network-wireless-good.png'
-                else:
-                    path = 'icons/network-wireless-strong.png'
-            elif self.tech == 'bluetooth':
-                if self.strength < 50:
-                    path = 'icons/network-bluetooth-weak.png'
-                else:
-                    path = 'icons/network-bluetooth-strong.png'
-            elif self.tech == 'ethernet':
-                path = 'icons/network-active.png'
-
-        resource = get_resource_path(path)
-        print(resource)
-        if resource:
-            self.trayIcon.setIcon(QIcon(resource))
 
     def technology_added(self, path, properties):
         self.tech_pane.add_technology(path, properties)
@@ -707,7 +672,6 @@ class MainWidget(QWidget):
         for name, value in list(self.manager.GetProperties().items()):
             if name == 'State':
                 self.manager_state = value
-                self.update_icon()
             self.manager_pane.property_changed(name, value)
 
     def connman_down(self):
@@ -715,7 +679,6 @@ class MainWidget(QWidget):
         self.default_service = ''
         self.tech = ''
         self.strength = 0
-        self.update_icon()
 
         if self.agent:
             self.agent.remove_from_connection(self.bus, self.agent_path)
