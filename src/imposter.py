@@ -562,9 +562,9 @@ class MainWidget(QWidget):
             if self.isVisible():
                 self.hide()
             else:
-                self.show()
                 self.raise_()
                 self.activateWindow()
+                self.show()
 
     def connman_name_owner_changed(self, proxy):
         try:
